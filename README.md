@@ -12,8 +12,8 @@
     * [Holt-Winters](#Holt-Winters)
     * [FB Prophet](#FB-Prophet)
 * [Verification Metrics](#Verification-Metrics)
-    * [All Data Aggregated by Date](#All–Data–Aggregated–by-Date)
-    * [Individual Site/Product Models](#Individual-Site/Product-Models)
+    * [All Data Aggregated by Date](#All-Data-Aggregated-by-Date)
+    * [Individual Site-Product Models](#Individual-Site-Product-Models)
 * [Higher Level Models Attempted](#Higher-Level-Models-Attempted)
     * [Random Forest Model](#Random-Forest-Model)
     * [LightGBM (gradient boosting)](#LightGBM-(gradient-boosting))
@@ -59,7 +59,7 @@ This data came in multiple `.csv` files, including:
 ## Exploratory Data Analysis (EDA)
 
 ## Uni-variable Models Attempted
-** Note: All graphs shown here are examining the data at a YYYY/MM level, collapsing product ID and site ID into an aggregated sum. Model selection was based on the individual product x site level, however data was too granular to show all that in this summary. see [this `.py` file]() for more information ** 
+**Note: All graphs shown here are examining the data at a YYYY/MM level, collapsing product ID and site ID into an aggregated sum. Model selection was based on the individual product x site level, however data was too granular to show all that in this summary. see [this `.py` file]() for more information** 
 
 
 [Back to Top](#Table-of-Contents)
@@ -74,7 +74,7 @@ When examining just the overall trends aggregated by date, it seems like this mo
 [Back to Top](#Table-of-Contents)
 
 ### Holt-Winters:
-I wanted to try out the Holt-Winters forecasting also 
+I wanted to try out the Holt-Winters forecasting also because this can apply three different smoothing functions to the model. This is another model that is used for forecasting seasonality, especially some sort of repeating period over time. Unfortunately this model did not perform well with my data, because the periodicity piece in my data didn't really exist and therefore couldn't predict a well.
 
 ![](images/holt-winters.png)
 
@@ -95,10 +95,10 @@ In this study I used three different metrics:
 * MAE (Mean absolute error): This sums the error in absolute value, so we don't deal with negative values. It is relatively easy to explain, however it is scale dependent, meaning it will change on what we are forecasting.
 * MASE (Mean absolute scaled error): Similar to the MAE, however it compare the model error to the naive model. If the value is above 1, it means the model performs worse than the naive model.
 
-** Note: While I do look at three different metrics, I chose to focus on MASE because it seem more intuitive and interpretable in the context of time series **
+**Note: While I do look at three different metrics, I chose to focus on MASE because it seem more intuitive and interpretable in the context of time series**
 
 ### All Data Aggregated by Date:
-** Note all metrics are based on the test set performance **
+**Note all metrics are based on the test set performance**
 
 | Forecast Model | RMSE | MAE  | MASE | 
 |--------------- | ---- | ---  | ---- |
@@ -108,16 +108,16 @@ In this study I used three different metrics:
 
 Based on this metrics table, across the board, the SARIMA performed the best for all the products and sites aggregated together. However, this is not the model of interest, but this is just an example of how the model would be chosen.
 
-### Individual Site/Product Models:
+### Individual Site-Product Models:
 
-** Note all metrics are based on the test set performance **
+**Note all metrics are based on the test set performance**
 | Forecast Model | RMSE | MAE  | MASE | 
 |--------------- | ---- | ---  | ---- |
 |SARIMA | 22.18 | 6.50  | 1.04|
 |Holt-Winters | 3007.98 | 51.69  | 8.30 |
 |FB Prophet | 35.74 | 11.40 | 1.83 |
 
-These are the metrics from the individual site/product models when examining across all models. For information about individual test metrics, see [the `.csv` here](). Based on these results, across all three metrics, it seems like the basic SARIMA model did the best across the board, therefore the univariate models will all be predicted using SARIMA.
+These are the aggregated metrics from the individual site/product models when examining across all models. For information about individual test metrics, see [the `.csv` here](results/all_metrics.csv). Based on these results, across all three metrics, it seems like the basic SARIMA model did the best across the board, therefore the univariate models will all be predicted using SARIMA.
 
 [Back to Top](#Table-of-Contents)
 
@@ -141,7 +141,7 @@ These are the metrics from the individual site/product models when examining acr
 
 ## Conclusions
 
-Using a univariate model, I was able to predict the next three months stock distributed based on the historical data at the granularity of site and product. While this model worked and gave predictions with the best error metric when in the validation stage, it is still a univariate model and may not be picking up on the nuances that the other features could provide. [Link to the Univariate Solutions]()
+Using a univariate model, I was able to predict the next three months stock distributed based on the historical data at the granularity of site and product. While this model worked and gave predictions with the best error metric when in the validation stage, it is still a univariate model and may not be picking up on the nuances that the other features could provide. [Link to the Univariate Solutions](results/univariate_submission.csv)
 
 Additionally, I tried some ensemble methods as I believe that adding in more than just the outcome into the model could help us gain a better understanding of what is going on with this data and how to best serve these communities that need these healthcare supplies. While I did not go with a deep learning method (LSTM or DeepAR), I felt that the random forest and gradient boosting models added enough complexity to gain a few more insights from the primary dataset. [Link to the More Complex solutions]()
 

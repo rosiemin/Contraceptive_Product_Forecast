@@ -178,7 +178,7 @@ def cross_val(test_df, train_df, test_lst, label_lst):
     return metrics
 
 if __name__ == "__main__":
-    train, product, site = clean.load_data('data/')
+    train, product, site = clean.load_data('../data/')
 
     df = clean.clean_data(train, product, site)
 

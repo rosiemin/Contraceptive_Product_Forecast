@@ -18,7 +18,7 @@ import plotly.graph_objs as go
 import clean_dta as clean
 import univariate as uni
 
-train, product, site = clean.load_data('data/')
+train, product, site = clean.load_data('../data/')
 
 df = clean.clean_data(train, product, site)
 
@@ -28,7 +28,7 @@ Total_stock_distributed =df.groupby(['month','district','site_code']).product_co
 Total_stock_distributed.rename({'product_code':'Total_product_on_month_basis_for_each_site_code'}, axis=1, inplace=True)
 
 def count_product(text):
-    count = sum([1 for char in text if char in string.punctuation])
+    count = sum([1 for char in text if char in str.punctuation])
     return round(count/(len(text) - text.count(" ")), 3)*100
 
 Total_stock_distributed['Total_product_persite'] = Total_stock_distributed['Total_product_on_month_basis_for_each_site_code'].apply(lambda x: len(x) - x.count(" "))

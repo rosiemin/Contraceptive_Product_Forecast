@@ -18,7 +18,7 @@ import plotly.graph_objs as go
 import clean_dta as clean
 import univariate as uni
 
-train, product, site = clean.load_data('data/')
+train, product, site = clean.load_data('../data/')
 
 df = clean.clean_data(train, product, site)
 

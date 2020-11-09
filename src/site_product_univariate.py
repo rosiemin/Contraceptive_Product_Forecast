@@ -135,7 +135,7 @@ def get_all_predictions(df):
 if __name__ == "__main__":
     
 
-    train, product, site = clean.load_data('data/')
+    train, product, site = clean.load_data('../data/')
 
     df = clean.clean_data(train, product, site)
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     # total_metrics = uni.cross_val(all_test, all_train, ['SARIMA', 'HW-3', 'fbProphet'], ['SARIMA', 'HW', 'FB'])
 
     # final = get_all_predictions(df_use)
-    ss = pd.read_csv('data/SampleSubmission.csv')
+    ss = pd.read_csv('../data/SampleSubmission.csv')
     ss['year'] = ss.ID.str.split(' X ').str[0]
     ss['month'] = ss.ID.str.split(' X ').str[1]
     ss['site'] = ss.ID.str.split(' X ').str[2]
@@ -194,4 +194,16 @@ if __name__ == "__main__":
     
     final_df = pd.concat(all_preds, axis = 0)
     final_df['prediction'] = final_df['prediction'].copy() - 1
-    final_df.to_csv('univariate_preds.csv')
+
+    # making any negative number = 0, since it doesn't make sense to have negative stock
+    final_df['prediction'] = np.where(final_df['prediction']>0, final_df['prediction'], 0)
+    # making the super high outliers the max in the original dataset because it doesn't make sense to have 600,000 products go to one site
+    final_df['prediction'] = np.where(final_df['prediction']<1000, final_df['prediction'], 1728)
+
+    #creating ID variable to match to the sample submission format
+    final_df['ID']=final_df.year.astype(str)+' X '+final_df.month.astype(str)+' X '+final_df['site']+' X '+final_df['product']
+
+    # creating csv like the sample submission
+    naive_sub = final_df[['ID','prediction']]
+    naive_sub['prediction'] = naive_sub['prediction'].astype(int)
+    naive_sub.to_csv('results/univariate_submission.csv')
