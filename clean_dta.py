@@ -10,12 +10,9 @@ import seaborn as sns
 
 
 def load_data(BASE_PATH):
-    annual_cases = pd.read_csv(BASE_PATH + 'contraceptive_case_data_annual.csv')
     train = pd.read_csv(BASE_PATH + 'Train.csv')
     product = pd.read_csv(BASE_PATH + 'product.csv')
-    monthly_cases = pd.read_csv(BASE_PATH + 'monthly_cases.csv')
     site_df = pd.read_csv(BASE_PATH + 'service_delivery_site_data.csv')
-    ss = pd.read_csv(BASE_PATH + 'SampleSubmission.csv')
 
     return train, product, site_df
 

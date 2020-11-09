@@ -54,19 +54,20 @@ def train_test_split(df, split_pct = 0.8):
 
     return train_df, test_df
 
-def test_stationarity(timeseries, dates):
+def test_stationarity(timeseries, dates, plot_flag = False):
     rolmean = timeseries.rolling(window=3).mean()
     rolstd = timeseries.rolling(window=3).std()
     
-    plt.figure(figsize=(14,5))
-    sns.despine(left=True)
-    orig = plt.plot(dates, timeseries, color='blue',label='Original')
-    mean = plt.plot(dates, rolmean, color='red', label='Rolling Mean')
-    std = plt.plot(dates, rolstd, color='black', label = 'Rolling Std')
+    if plot_flag:
+        plt.figure(figsize=(14,5))
+        sns.despine(left=True)
+        plt.plot(dates, timeseries, color='blue',label='Original')
+        plt.plot(dates, rolmean, color='red', label='Rolling Mean')
+        plt.plot(dates, rolstd, color='black', label = 'Rolling Std')
 
-    plt.legend(loc='best'); plt.title('Rolling Mean & Standard Deviation')
-    plt.show()
-    
+        plt.legend(loc='best'); plt.title('Rolling Mean & Standard Deviation')
+        plt.show()
+        
     print ('<Results of Dickey-Fuller Test>')
     dftest = adfuller(timeseries, autolag='AIC')
     dfoutput = pd.Series(dftest[0:4],
@@ -89,7 +90,7 @@ def p_d_q(y):
                 order=param,
                 seasonal_order=param_seasonal,
                 enforce_stationarity=False,
-                enforce_invertibility=False)
+                enforce_invertibility=False, disp = 0)
 
             results = mod.fit()
             
@@ -101,7 +102,7 @@ def p_d_q(y):
 
     return param_use, param_seasonal_use
 
-def SARIMA(df, start, order, seasonal_order, test_df, label= 'SARIMA'):
+def SARIMA(df, start, order, seasonal_order, test_df, label= 'SARIMA', plot_flag = False):
 
     results = sm.tsa.statespace.SARIMAX(df['stock_distributed'],
         order=order,
@@ -109,38 +110,42 @@ def SARIMA(df, start, order, seasonal_order, test_df, label= 'SARIMA'):
         enforce_stationarity=False,
         enforce_invertibility=False).fit(use_boxcox=True)
 
-    print(results.summary().tables[1])    
+    # print(results.summary().tables[1])    
 
     pred = results.get_prediction(start=start, dynamic=False)
     pred_ci = pred.conf_int()
-    ax = df.plot(label='observed',x = 'calendar')
-    pred.predicted_mean.plot(ax=ax, label='One-step ahead Forecast', alpha=.7, figsize=(14, 7))
-    ax.fill_between(pred_ci.index,
-                    pred_ci.iloc[:, 0],
-                    pred_ci.iloc[:, 1], color='k', alpha=.2)
-    ax.set_xlabel('Date', fontsize = 14)
-    ax.set_ylabel('Stock Distribution', fontsize = 14)
-    ax.tick_params(labelsize = 12)
-    plt.legend()
-    plt.show()
+    if plot_flag:
+        ax = df.plot(label='observed',x = 'calendar')
+        pred.predicted_mean.plot(ax=ax, label='One-step ahead Forecast', alpha=.7, figsize=(14, 7))
+        ax.fill_between(pred_ci.index,
+                        pred_ci.iloc[:, 0],
+                        pred_ci.iloc[:, 1], color='k', alpha=.2)
+        ax.set_xlabel('Date', fontsize = 14)
+        ax.set_ylabel('Stock Distribution', fontsize = 14)
+        ax.tick_params(labelsize = 12)
+        plt.title('SARIMA')
+        plt.legend()
+        plt.show()
 
     test_df[label] = pred.predicted_mean
 
     return test_df
 
-def holt_winters(df, seasonal_period, test_df, label = 'HW'):
+def holt_winters(df, seasonal_period, test_df, label = 'HW', plot_flag = False):
     fit2 = ExponentialSmoothing(np.asarray(df['stock_distributed']) ,seasonal_periods=seasonal_period ,trend='add', seasonal='add').fit(use_boxcox=True)
     test_df[label] = fit2.forecast(len(test_df))
 
-    plt.figure(figsize=(16,8))
-    plt.plot(df_use['stock_distributed'], label='Actual')
-    plt.plot(test_df[label], label=label)
-    plt.legend(loc='best')
-    plt.show()
+    if plot_flag:
+        plt.figure(figsize=(16,8))
+        plt.plot(df_use['stock_distributed'], label='Actual')
+        plt.plot(test_df[label], label=label)
+        plt.legend(loc='best')
+        plt.title('Holt-Winter Exponential Smoothing')
+        plt.show()
 
     return test_df
 
-def fb_prophet(df, df_test, period = 6, label = 'fbProphet'):
+def fb_prophet(df, df_test, period = 6, label = 'fbProphet', plot_flag = False):
     df_use = df.rename(columns={'calendar': 'ds', 'stock_distributed': 'y'})
     model = Prophet()
     model.fit(df_use)
@@ -148,9 +153,11 @@ def fb_prophet(df, df_test, period = 6, label = 'fbProphet'):
     forecast = model.make_future_dataframe(periods=period, freq='MS')
     forecast = model.predict(forecast)
 
-    plt.figure(figsize=(18, 6))
-    model.plot(forecast, xlabel = 'Date', ylabel = 'Stock Distributed')
-    plt.title('FB Prophet')
+    if plot_flag:
+        plt.figure(figsize=(18, 6))
+        model.plot(forecast, xlabel = 'Date', ylabel = 'Stock Distributed')
+        plt.title('FB Prophet')
+        plt.show()
 
     forecast_trunc = forecast[len(forecast)-len(df_test):].copy()
     forecast_trunc.index = df_test.index
@@ -162,11 +169,11 @@ def fb_prophet(df, df_test, period = 6, label = 'fbProphet'):
 
 
 def cross_val(test_df, train_df, test_lst, label_lst):
-    metrics = pd.DataFrame(columns = ['label', 'RMSE', 'MAE', 'MAPE', 'MASE'])
+    metrics = pd.DataFrame(columns = ['label', 'RMSE', 'MAE', 'MASE'])
     y_test = test_df['stock_distributed']
     y_train = train_df['stock_distributed']
     for test, label in zip(test_lst, label_lst):
-        metrics.loc[len(metrics)] = [label, round(RMSE(y_test, test_df[test]), 2), round(MAE(y_test, test_df[test]), 2), round(MAPE(y_test, test_df[test]), 2), round(MASE(y_train, y_test, test_df[test]), 2)]
+        metrics.loc[len(metrics)] = [label, round(RMSE(y_test, test_df[test]), 2), round(MAE(y_test, test_df[test]), 2), round(MASE(y_train, y_test, test_df[test]), 2)]
     
     return metrics
 
@@ -179,14 +186,14 @@ if __name__ == "__main__":
 
     train, test = train_test_split(df_use, 0.8)
 
-    test_stationarity(df_use.stock_distributed.dropna(), df_use.calendar)
+    test_stationarity(df_use.stock_distributed.dropna(), df_use.calendar, True)
 
     params, params_seasonal = p_d_q(df_use['stock_distributed'])
 
-    test = SARIMA(df_use, '2018-10-01', params, params_seasonal, test, 'SARIMA')
+    test = SARIMA(df_use, '2018-10-01', params, params_seasonal, test, 'SARIMA', True)
 
-    test = holt_winters(df_use, 14, test, 'HW-14')
+    test = holt_winters(df_use, 14, test, 'HW-14', True)
 
-    test = fb_prophet(train, test, len(test))
+    test = fb_prophet(train, test, len(test), plot_flag = True)
 
     metrics = cross_val(test, train, ['SARIMA', 'HW-14', 'fbProphet'], ['SARIMA', 'Holt-Winters 14', 'FB Prophet'])
