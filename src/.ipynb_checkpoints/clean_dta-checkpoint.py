@@ -42,7 +42,7 @@ def group_and_subset_data(df, groupby_lst):
 def remove_short_df(df):
     product_names = df['product_code'].unique()
     site_names = df['site_code'].unique()
-
+    
     all_names = [s + ' ' + p for s in site_names for p in product_names]
 
     df_keep = []

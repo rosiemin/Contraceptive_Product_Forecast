@@ -79,7 +79,7 @@ def validation_run_all_products_sites(all_names, df_use):
 
         print('identifying best model for this data and saving data')
         product_lst.append(test)
-        metrics_lst.append(metrics[metrics['MASE'] == metrics["MASE"].min()])
+        metrics_lst.append(metrics[metrics['MAPE'] == metrics["MAPE"].min()])
         train_lst.append(train)
 
     all_train = pd.concat(train_lst, axis = 0).to_csv('all_train.csv')
@@ -152,58 +152,56 @@ if __name__ == "__main__":
     all_names = df_use['site_product'].unique().tolist()
     df_use.drop('site_product', inplace = True, axis = 1)
 
-    all_train, all_test, all_metrics = validation_run_all_products_sites(all_names, df_use)
+    # all_train, all_test, all_metrics = validation_run_all_products_sites(all_names, df_use)
 
-    # running metrics across all tests for each model
-    total_metrics = uni.cross_val(all_test, all_train, ['SARIMA', 'HW-3', 'fbProphet'], ['SARIMA', 'HW', 'FB'])
+    #running metrics across all tests for each model
+    # total_metrics = uni.cross_val(all_test, all_train, ['SARIMA', 'HW-3', 'fbProphet'], ['SARIMA', 'HW', 'FB'])
 
     # final = get_all_predictions(df_use)
+    ss = pd.read_csv('../data/SampleSubmission.csv')
+    ss['year'] = ss.ID.str.split(' X ').str[0]
+    ss['month'] = ss.ID.str.split(' X ').str[1]
+    ss['site'] = ss.ID.str.split(' X ').str[2]
+    ss['product'] = ss.ID.str.split(' X ').str[3]
 
+    all_preds = []
 
-    # ss = pd.read_csv('../data/SampleSubmission.csv')
-    # ss['year'] = ss.ID.str.split(' X ').str[0]
-    # ss['month'] = ss.ID.str.split(' X ').str[1]
-    # ss['site'] = ss.ID.str.split(' X ').str[2]
-    # ss['product'] = ss.ID.str.split(' X ').str[3]
-
-    # all_preds = []
-
-    # for p in tqdm(all_names):
-    #     sub_df = df_use[(df_use['product_code']== p.split(' X ')[1]) & (df_use['site_code']== p.split(' X ')[0])]
+    for p in tqdm(all_names):
+        sub_df = df_use[(df_use['product_code']== p.split(' X ')[1]) & (df_use['site_code']== p.split(' X ')[0])]
         
-    #     r = pd.date_range(start=df_use.calendar.min(), end=df_use.calendar.max(), freq = 'MS')
-    #     sub_df = sub_df.reindex(r).fillna(0).rename_axis('calendar')
-    #     sub_df['site_code'] = p.split(' X ')[0]
-    #     sub_df['product_code'] = p.split(' X ')[1]
-    #     sub_df['calendar'] = sub_df.index
-    #     sub_df['stock_distributed'] = sub_df['stock_distributed'].copy() + 1
+        r = pd.date_range(start=df_use.calendar.min(), end=df_use.calendar.max(), freq = 'MS')
+        sub_df = sub_df.reindex(r).fillna(0).rename_axis('calendar')
+        sub_df['site_code'] = p.split(' X ')[0]
+        sub_df['product_code'] = p.split(' X ')[1]
+        sub_df['calendar'] = sub_df.index
+        sub_df['stock_distributed'] = sub_df['stock_distributed'].copy() + 1
 
-    #     print('identifying p, d, q')
-    #     try:
-    #         params, params_seasonal = uni.p_d_q(sub_df['stock_distributed'])
-    #     except:
-    #         params = (0, 1, 1)
-    #         params_seasonal = (0, 1, 1, 12)  
+        print('identifying p, d, q')
+        try:
+            params, params_seasonal = uni.p_d_q(sub_df['stock_distributed'])
+        except:
+            params = (0, 1, 1)
+            params_seasonal = (0, 1, 1, 12)  
         
-    #     if len(sub_df):
-    #         all_preds.append(predict_SARIMA(sub_df, params, params_seasonal, p.split(' X ')[0], p.split(' X ')[1]))
-    #     else:
-    #         temp_df = pd.DataFrame([{'date':'2019-07-01', 'prediction': 1, 'month': 7, 'year': 2019, 'product': p.split(' X ')[1], 'site': p.split(' X ')[0]}, {'date':'2019-08-01', 'prediction': 1, 'month': 8, 'year': 2019, 'product': p.split(' X ')[1], 'site': p.split()[0]}, {'date':'2019-09-01', 'prediction': 1, 'month': 9, 'year': 2019, 'product': p.split(' X ')[1], 'site': p.split(' X ')[0]}, {'date':'2019-10-01', 'prediction': 1, 'month': 10, 'year': 2019, 'product': p.split(' X ')[1], 'site': p.split()[0]}])
+        if len(sub_df):
+            all_preds.append(predict_SARIMA(sub_df, params, params_seasonal, p.split(' X ')[0], p.split(' X ')[1]))
+        else:
+            temp_df = pd.DataFrame([{'date':'2019-07-01', 'prediction': 1, 'month': 7, 'year': 2019, 'product': p.split(' X ')[1], 'site': p.split(' X ')[0]}, {'date':'2019-08-01', 'prediction': 1, 'month': 8, 'year': 2019, 'product': p.split(' X ')[1], 'site': p.split()[0]}, {'date':'2019-09-01', 'prediction': 1, 'month': 9, 'year': 2019, 'product': p.split(' X ')[1], 'site': p.split(' X ')[0]}, {'date':'2019-10-01', 'prediction': 1, 'month': 10, 'year': 2019, 'product': p.split(' X ')[1], 'site': p.split()[0]}])
 
-    #         all_preds.append(temp_df)
+            all_preds.append(temp_df)
     
-    # final_df = pd.concat(all_preds, axis = 0)
-    # final_df['prediction'] = final_df['prediction'].copy() - 1
+    final_df = pd.concat(all_preds, axis = 0)
+    final_df['prediction'] = final_df['prediction'].copy() - 1
 
-    # # making any negative number = 0, since it doesn't make sense to have negative stock
-    # final_df['prediction'] = np.where(final_df['prediction']>0, final_df['prediction'], 0)
-    # # making the super high outliers the max in the original dataset because it doesn't make sense to have 600,000 products go to one site
-    # final_df['prediction'] = np.where(final_df['prediction']<1000, final_df['prediction'], 1728)
+    # making any negative number = 0, since it doesn't make sense to have negative stock
+    final_df['prediction'] = np.where(final_df['prediction']>0, final_df['prediction'], 0)
+    # making the super high outliers the max in the original dataset because it doesn't make sense to have 600,000 products go to one site
+    final_df['prediction'] = np.where(final_df['prediction']<1000, final_df['prediction'], 1728)
 
-    # #creating ID variable to match to the sample submission format
-    # final_df['ID']=final_df.year.astype(str)+' X '+final_df.month.astype(str)+' X '+final_df['site']+' X '+final_df['product']
+    #creating ID variable to match to the sample submission format
+    final_df['ID']=final_df.year.astype(str)+' X '+final_df.month.astype(str)+' X '+final_df['site']+' X '+final_df['product']
 
-    # # creating csv like the sample submission
-    # naive_sub = final_df[['ID','prediction']]
-    # naive_sub['prediction'] = naive_sub['prediction'].astype(int)
-    # naive_sub.to_csv('results/univariate_submission.csv')
+    # creating csv like the sample submission
+    naive_sub = final_df[['ID','prediction']]
+    naive_sub['prediction'] = naive_sub['prediction'].astype(int)
+    naive_sub.to_csv('results/univariate_submission.csv')

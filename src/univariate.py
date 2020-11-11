@@ -182,6 +182,8 @@ if __name__ == "__main__":
 
     df = clean.clean_data(train, product, site)
 
+    df = clean.remove_short_df(df)
+
     all_df, df_use = clean.group_and_subset_data(df, ['calendar'])
 
     train, test = train_test_split(df_use, 0.8)

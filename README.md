@@ -14,7 +14,7 @@
 * [Verification Metrics](#Verification-Metrics)
     * [All Data Aggregated by Date](#All-Data-Aggregated-by-Date)
     * [Individual Site-Product Models](#Individual-Site-Product-Models)
-* [Higher Level Models Attempted](#Higher-Level-Models-Attempted)
+* [Forecast Distance Model](#Forecast-Distance-Model)
     * [Random Forest Model](#Random-Forest-Model)
     * [LightGBM (gradient boosting)](#LightGBM-(gradient-boosting))
     * [Hierarchical Time Series](#Hierarchical-Time-Series)
@@ -57,6 +57,41 @@ This data came in multiple `.csv` files, including:
 5. Model Selection & Forecast 
 
 ## Exploratory Data Analysis (EDA)
+Full Dataset's Stock Distributed histogram & Boxplot:
+![](images/EDA_hist_before.png)
+
+* I removed all data that had less than 6 months worth of information at the product-site level or if data existed but there was no information in 2019. These were removed because there wouldn't be enough data for predictions moving forward or there was no interest in this site-product combination in 2019, therefore the prediction would be 0. 
+
+
+Data after removing these product-site combinations
+![](images/EDA_hist_after.png)
+
+As we can see here, there weren't many huge differences to the underlying distribution of the data, therefore I decided to perform the rest of the EDA and all the analyses on this subset data.
+
+First I wanted to look aggregated over time if there were any overall trends
+
+![](images/stock_vs_time.png)
+
+We can see here that we do see an upward trend as time continues, however, there doesn't seem any sort of periodicity or seasonal trends.
+
+Overall, I wanted to see if there were any particular trend in the outcome variable first by region, as looking by site would have been too granular to examine. 
+
+![](images/stock_by_region.png)
+
+Here we can see two regions stick out to us more than the others, the Abidjan regions 1 and 2 make up for the vast majority of the stock distributed and we can see an upward progression over time, however, beyond this we can't really see much of a trend in any of the other sites except that they are lower.
+
+I additionally wanted to look at the outcome by the product to see if there were any trends across the product code.
+
+![](images/stock_by_product.png)
+
+The data here are a little less clear as we see major spikes and then dips month over month for some products while others are declining and some are staying stagnant. 
+
+Last in this first part, I wanted to see if there were any strong correlations between my outcome `stock_distributed` and any of the other stock like variables found in the primary dataset.
+
+![](images/stock_by_vars.png)
+
+Overall the trends seem minimal for the most part, there doesn't seem like much of a linear trend across any of the variables, with the *possible* exception of the Average Monthly Consumption, but that still had a lot of `0` values to make it look more fan like rather than linear.
+
 
 ## Uni-variable Models Attempted
 **Note: All graphs shown here are examining the data at a YYYY/MM level, collapsing product ID and site ID into an aggregated sum. Model selection was based on the individual product x site level, however data was too granular to show all that in this summary. see [this `.py` file]() for more information** 
@@ -67,7 +102,7 @@ This data came in multiple `.csv` files, including:
 ### SARIMA:
 I chose to use the basic SARIMA because it extends the basic ARIMA model with an addition of a seasonal component. In order to identify my hyperparameters, I ran a grid search for each model, trying to identify the lowest AIC across all possibilities. 
 
-![](images/SARIMA.png)
+![](images/SARIMA_after.png)
 
 When examining just the overall trends aggregated by date, it seems like this model did pretty well (see [Verification Metrics](#verification-metrics))
 
@@ -76,14 +111,14 @@ When examining just the overall trends aggregated by date, it seems like this mo
 ### Holt-Winters:
 I wanted to try out the Holt-Winters forecasting also because this can apply three different smoothing functions to the model. This is another model that is used for forecasting seasonality, especially some sort of repeating period over time. Unfortunately this model did not perform well with my data, because the periodicity piece in my data didn't really exist and therefore couldn't predict a well.
 
-![](images/holt-winters.png)
+![](images/holt-winters_after.png)
 
 [Back to Top](#Table-of-Contents)
 
 ### FB Prophet:
 In addition to the first two more basic models, I wanted to try something a bit more complex that was built specifically for forecasting. The [Facebook Prophet](Prophet) model is specifically designed for analyzing time series that display patterns on different time scales. Since my data I have is by month/year, without any more granularity, it was of interest to me to identify if I had more than just a seasonal trend in my data. 
 
-![](images/fbprophet.png)
+![](images/fbprophet_after.png)
 
 [Back to Top](#Table-of-Contents)
 
@@ -102,9 +137,9 @@ In this study I used three different metrics:
 
 | Forecast Model | RMSE | MAE  | MASE | 
 |--------------- | ---- | ---  | ---- |
-|SARIMA | 1390.53 | 1108.15 | 0.97|
-|Holt-Winters | 1653.68 | 1368.48 | 1.19 |
-|FB Prophet | 2973.96 | 2636.40  | 2.30 |
+|SARIMA | 1313.57 | 1065.48 | 0.84|
+|Holt-Winters | 1359.33 | 1184.42 | 0.93 |
+|FB Prophet | 2894.60 | 2524.21  | 1.99 |
 
 Based on this metrics table, across the board, the SARIMA performed the best for all the products and sites aggregated together. However, this is not the model of interest, but this is just an example of how the model would be chosen.
 
@@ -122,21 +157,8 @@ These are the aggregated metrics from the individual site/product models when ex
 [Back to Top](#Table-of-Contents)
 
 
-## Higher Level Models Attempted
+## Forecast Distance Model
 
-### Random Forest Model:
-
-[Back to Top](#Table-of-Contents)
-
-
-### LightGBM (gradient boosting):
-
-[Back to Top](#Table-of-Contents)
-
-
-### Hierarchical Time Series:
-
-[Back to Top](#Table-of-Contents)
 
 
 ## Conclusions
@@ -146,8 +168,9 @@ Using a univariate model, I was able to predict the next three months stock dist
 Additionally, I tried some ensemble methods as I believe that adding in more than just the outcome into the model could help us gain a better understanding of what is going on with this data and how to best serve these communities that need these healthcare supplies. While I did not go with a deep learning method (LSTM or DeepAR), I felt that the random forest and gradient boosting models added enough complexity to gain a few more insights from the primary dataset. [Link to the More Complex solutions]()
 
 ## Future Work
+With any model, several assumptions are made, which could be seen as weaknesses or areas of improvement for the analyses. I have have made several assumptions for my analyses including: 
 
-* The first weakness of this analyses, is that I didn't perform a formal cross validation, with a sliding window for the train/test set. There are a few reasons for this, but the main reason is that the data is too granular, meaning that some of the site/product combinations had very few samples in it to perform a formal CV. Instead, I took an approach with doing a single train test split, 80/20, so that I would have some test data to compare my verification metrics. If I were to do this study again, I would want to use a formal CV, however, with the methods I chose, I was limited by my sample size.
+* For the uni-variable models, I didn't perform a formal cross validation, with a sliding window for the train/test set. There are a few reasons for this, but the main reason is that the data is too granular, meaning that some of the site/product combinations had very few samples in it to perform a formal CV. Instead, I took an approach with doing a single train test split, 80/20, so that I would have some test data to compare my verification metrics. If I were to do this study again, I would want to use a formal CV, however, with the methods I chose, I was limited by my sample size.
 
 * This analysis focused on the primary dataset, while some secondary datasets were provided, the overlap between the column names and product codes were confusing and therefore, I decided to try to focus only on the primary dataset. In the future, I would like to understand more the relationship between the column names in the secondary datasets with the syntax of the product codes so that the data can be used and help bolster the current analysis.
 
