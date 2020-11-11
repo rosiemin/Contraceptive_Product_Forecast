@@ -194,8 +194,8 @@ if __name__ == "__main__":
 
     test = SARIMA(df_use, '2018-10-01', params, params_seasonal, test, 'SARIMA', True)
 
-    test = holt_winters(df_use, 14, test, 'HW-14', True)
+    test = holt_winters(df_use, 3, test, 'HW-3', True)
 
     test = fb_prophet(train, test, len(test), plot_flag = True)
 
-    metrics = cross_val(test, train, ['SARIMA', 'HW-14', 'fbProphet'], ['SARIMA', 'Holt-Winters 14', 'FB Prophet'])
+    metrics = cross_val(test, train, ['SARIMA', 'HW-3', 'fbProphet'], ['SARIMA', 'Holt-Winters 14', 'FB Prophet'])

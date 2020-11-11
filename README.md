@@ -109,7 +109,7 @@ When examining just the overall trends aggregated by date, it seems like this mo
 [Back to Top](#Table-of-Contents)
 
 ### Holt-Winters:
-I wanted to try out the Holt-Winters forecasting also because this can apply three different smoothing functions to the model. This is another model that is used for forecasting seasonality, especially some sort of repeating period over time. Unfortunately this model did not perform well with my data, because the periodicity piece in my data didn't really exist and therefore couldn't predict a well.
+I wanted to try out the Holt-Winters forecasting also because this can apply three different smoothing functions to the model. This is another model that is used for forecasting seasonality, especially some sort of repeating period over time. Unfortunately this model did not perform well with my data, because the periodicity piece in my data didn't really exist and therefore couldn't predict a well. For this model also the hyperparameter that denoted the window, I had to keep it smaller because not all site-product data had the same 42 rows that the aggregated amount has, therefore it didn't predict as well.
 
 ![](images/holt-winters_after.png)
 
@@ -138,7 +138,7 @@ In this study I used three different metrics:
 | Forecast Model | RMSE | MAE  | MASE | 
 |--------------- | ---- | ---  | ---- |
 |SARIMA | 1313.57 | 1065.48 | 0.84|
-|Holt-Winters | 1359.33 | 1184.42 | 0.93 |
+|Holt-Winters | 3044.80 | 2916.85 | 2.30 |
 |FB Prophet | 2894.60 | 2524.21  | 1.99 |
 
 Based on this metrics table, across the board, the SARIMA performed the best for all the products and sites aggregated together. However, this is not the model of interest, but this is just an example of how the model would be chosen.
