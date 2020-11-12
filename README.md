@@ -15,6 +15,7 @@
     * [All Data Aggregated by Date](#All-Data-Aggregated-by-Date)
     * [Individual Site-Product Metrics](#Individual-Site-Product-Metrics)
 * [Forecast Distance Model](#Forecast-Distance-Model)
+* [Final Submission Link](#final-submission)
 * [Conclusions](#Conclusions)
 * [Future Work](#Future-Work)
 
@@ -208,7 +209,9 @@ Additionally, I wanted to look and see what the feature importance was for the f
 
 Using a uni-variable model, I was able to predict the next three months stock distributed based on the historical data at the granularity of site and product. While this model worked and gave predictions with the best error metric among the uni-variable models, it was outperformed by the higher level ensemble methods.
 
-I tried some ensemble methods as I believe that adding in more than just the outcome into the model could help us gain a better understanding of what is going on with this data and how to best serve these communities that need these healthcare supplies. Additionally, adding in lag variables allows us to gain more information about future predictions when we have no information. While I did not go with a deep learning method (LSTM or DeepAR), I felt that the random forest and gradient boosting models added enough complexity to gain a few more insights from the primary dataset. [Link to the More Complex solutions](results/submission_predictions.csv)
+I tried some ensemble methods as I believe that adding in more than just the outcome into the model could help us gain a better understanding of what is going on with this data and how to best serve these communities that need these healthcare supplies. Additionally, adding in lag variables allows us to gain more information about future predictions when we have no information. While I did not go with a deep learning method (LSTM or DeepAR), I felt that the random forest and gradient boosting models added enough complexity to gain a few more insights from the primary dataset. 
+
+## [Final Submission](results/submission_predictions.csv)
 
 [Back to Top](#Table-of-Contents)
 
