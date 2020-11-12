@@ -6,7 +6,7 @@
 * [Motivation and Background](#Motivation-and-Background)
 * [The Data](#The-Data)
 * [Analysis Flow Overview](#Analysis-Flow-Overview)
-* [Exploratory Data Analysis (EDA)](#Exploratory-Data-Analysis-(EDA))
+* [Exploratory Data Analysis (EDA)](#Exploratory-Data-Analysis)
 * [Uni-variable Models Attempted](#Uni-variable-Models-Attempted)
     * [SARIMA](#SARIMA)
     * [Holt-Winters](#Holt-Winters)
@@ -54,7 +54,7 @@ This data came in multiple `.csv` files, including:
 4. Attempting a Higher Level Model
 5. Model Selection & Forecast 
 
-## Exploratory Data Analysis (EDA)
+## Exploratory Data Analysis
 Full Dataset's Stock Distributed histogram & Boxplot:
 ![](images/EDA_hist_before.png)
 
