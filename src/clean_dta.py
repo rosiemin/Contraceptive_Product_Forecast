@@ -11,6 +11,8 @@ import seaborn as sns
 
 def load_data(BASE_PATH):
     train = pd.read_csv(BASE_PATH + 'Train.csv')
+    train.drop('stock_stockout_days', axis = 1, inplace = True)
+
     product = pd.read_csv(BASE_PATH + 'product.csv')
     site_df = pd.read_csv(BASE_PATH + 'service_delivery_site_data.csv')
 
@@ -23,8 +25,6 @@ def clean_data(t, p, s):
     t['ID']=t.year.astype(str)+' X '+t.month.astype(str)+' X '+t['site_code']+' X '+t['product_code']
 
     t['calendar'] = pd.to_datetime(t['year'].astype(str)  + t['month'].astype(str), format='%Y%m')
-
-    t.drop('stock_stockout_days', axis = 1, inplace = True)
 
     t['site_product'] = t['site_code'] + ' X ' + t['product_code']
 
@@ -51,13 +51,13 @@ def remove_short_df(df):
     for p in all_names:
         # pdb.set_trace()
         sub_df = df[(df['product_code']==p.split()[1]) & (df['site_code']==p.split()[0])]  
-        if len(sub_df)<6 or sub_df.year.max()<2019:
+        if sub_df.year.max()<2019 or len(sub_df)<6:
             site_product.append(p)
         else:
             df_keep.append(sub_df)
     
     df_new = pd.concat(df_keep, axis = 0)
-    return df_new
+    return df_new, site_product
 
 
 if __name__ == "__main__":
