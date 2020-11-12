@@ -170,7 +170,7 @@ if __name__ == "__main__":
     X_train, y_train, X_test, y_test, fts = train_test_data(training, validation_set, False)
     metrics, preds, mod = CV('Random Forest', X_train, y_train, X_test, y_test, 42)
 
-    # feature importances:
+    # feature importance:
 
     fi = pd.Series(index = fts, data = mod.feature_importances_)
     _ = fi.sort_values(ascending = False)[:20][::-1].plot(kind = 'barh', figsize=(12, 8), fontsize=14)
